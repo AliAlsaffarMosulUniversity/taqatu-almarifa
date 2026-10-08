@@ -217,7 +217,14 @@ details summary{cursor:pointer;color:var(--gold2)}
 .pick{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 20px}
 .pat{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;direction:rtl}
 .pat span{width:clamp(36px,5vw,64px);aspect-ratio:1;background:var(--sql);color:var(--ink);display:grid;place-items:center;font-family:var(--fd);font-weight:700;font-size:clamp(1.3rem,3vw,2.2rem);border-radius:6px}
-.ansrow{display:flex;flex-wrap:wrap;gap:10px}
+.pat .slot{width:clamp(36px,5vw,64px);aspect-ratio:1;background:var(--sql);color:var(--ink);border:2px dashed var(--sqd);border-radius:6px;font-family:var(--fd);font-weight:700;font-size:clamp(1.3rem,3vw,2.2rem);cursor:pointer;padding:0}
+.pat .slot.full{border-style:solid;border-color:var(--gold)}
+.pat .fix{background:var(--felt3);color:var(--ivory)}
+.tiles{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;direction:rtl}
+.tile{width:clamp(46px,6vw,76px);aspect-ratio:1;background:var(--gold);color:var(--ink);border:0;border-radius:10px;font-family:var(--fd);font-weight:700;font-size:clamp(1.5rem,3.4vw,2.6rem);cursor:pointer;box-shadow:0 4px 0 var(--wood);padding:0}
+.tile:hover:not(:disabled){background:var(--gold2)}
+.tile:disabled{opacity:.25;box-shadow:none;cursor:default}
+.ansrow{align-items:center;justify-content:center;display:flex;flex-wrap:wrap;gap:10px}
 .ansrow input{flex:1 1 240px;font-size:clamp(1.3rem,2.6vw,2rem);text-align:center;padding:10px}
 .bq p{font-family:var(--fd);font-size:1.2rem}.bq small{color:var(--mute)}
 
@@ -596,7 +603,13 @@ function clickCell(r,c){const M=S.cur;if(!M||M.over||U.q||U.paused)return;
   const ws=M.words.filter(w=>w.by==null&&cellsOf(w).some(([y,x])=>y===r&&x===c));if(!ws.length)return;
   ws.sort((a,b)=>a.d-b.d);U.sel=ws.length>1&&U.sel===ws[0].id?ws[1].id:ws[0].id;snd('tap');render()}
 function ask(){const M=S.cur,w=M.words.find(x=>x.id===U.sel);if(!w||w.by!=null||U.q)return;
-  U.q={id:w.id,left:S.cfg.qTime,done:false,ok:false,typed:'',sec:-1,gain:0};snd('ask');render();const el=$('#ansin');if(el)el.focus()}
+  const v=visMap(M),fix=cellsOf(w).map(([r,c],i)=>(r+','+c)in v?w.a[i]:null),need=[...w.a].filter((ch,i)=>!fix[i]),AB='ابتثجحخدذرزسشصضطظعغفقكلمنهوي';
+  const decoy=Array.from({length:Math.max(4,10-need.length)},()=>AB[Math.random()*AB.length|0]);
+  U.q={id:w.id,left:S.cfg.qTime,done:false,ok:false,typed:'',sec:-1,gain:0,fix,fill:fix.map(()=>null),tiles:shuffle(need.concat(decoy))};snd('ask');render()}
+const qWord=Q=>Q.fix.map((f,i)=>f||(Q.fill[i]!=null?Q.tiles[Q.fill[i]]:'')).join('');
+const qFull=Q=>Q.fix.every((f,i)=>f||Q.fill[i]!=null);
+function tileClick(k){const Q=U.q;if(!Q||Q.done||U.paused||Q.fill.includes(k))return;const i=Q.fix.findIndex((f,j)=>!f&&Q.fill[j]==null);if(i<0)return;Q.fill[i]=k;snd('tap');render()}
+function slotClick(i){const Q=U.q;if(!Q||Q.done||U.paused||Q.fill[i]==null)return;Q.fill[i]=null;render()}
 function answer(val){const Q=U.q;if(!Q||Q.done||U.paused)return;const M=S.cur,w=M.words.find(x=>x.id===Q.id);
   Q.done=true;Q.typed=val==null?null:val.trim();Q.ok=val!=null&&norm(val)===w.a;Q.gain=hiddenOf(w,visMap(M)).length;snd(Q.ok?'ok':'bad');render();const b=$('#contbtn');if(b)b.focus()}
 function cont(){const Q=U.q;if(!Q||!Q.done)return;U.q=null;resolve(Q.id,Q.ok)}
@@ -660,7 +673,7 @@ function vSetup(){return `<div class="pagehead"><h2>إعداد البطولة</h
 <label class="lrow"><input type="checkbox" id="crot" data-f="rot" ${S.cfg.rot?'checked':''}> تدوير الإجابة بين طلاب الفريق الثلاثة</label>
 <h3>لون الخلفية</h3><div class="lrow">${BGS.map(([c,t])=>`<button class="sw ${S.bg===c?'on':''}" style="background:${c}" data-act="bg" data-c="${c}" title="${t}" aria-label="${t}"></button>`).join('')}<input type="color" id="cbg" data-f="bg" value="${esc(S.bg)}" aria-label="لون مخصّص"><span class="empty">أو اختر لوناً مخصّصاً</span></div>
 <h3>الشعاران</h3>${[['col','شعار الكلية، يمين الأعلى'],['uni','شعار الجامعة، يسار الأعلى']].map(([k,t])=>`<div class="lrow"><label class="btn sm">${t}<input type="file" accept="image/*" id="lf-${k}" data-f="logo" data-k="${k}" hidden></label>${S.logos[k]?`<button class="btn sm" data-act="rmlogo" data-k="${k}">إزالة</button>`:`<span class="empty">${DEFLOGO[k]?'مثبّت داخل اللعبة':'لم يُرفع بعد'}</span>`}</div>`).join('')}
-<h3>قواعد اللعب</h3><ul class="rules"><li>لكل جولة نموذج مستقل من 18 إلى 20 كلمة، ولا تتكرر كلمة بين النماذج.</li><li>الكلمات موزّعة على كل التخصصات، وتزداد صعوبتها كلما تقدّم الدور.</li><li>يتناوب القسمان. للقسم وقت محدد لاختيار كلمة، ثم وقت للإجابة.</li><li>انتهاء وقت الاختيار يُفقد الدور.</li><li>الإجابة الصحيحة: نقطة عن كل حرف كان مخفياً في الكلمة.</li><li>الإجابة الخاطئة أو انتهاء الوقت: يُكشف حرف من الكلمة وينتقل الدور.</li><li>لكل فريق مساعدة واحدة في الجولة: كشف حرف من الكلمة المختارة.</li><li>تنتهي الجولة باكتمال الشبكة أو بانتهاء مدتها، ويفوز صاحب النقاط الأعلى.</li><li>الهمزات تُكتب ألفاً، والتاء المربوطة هاءً.</li></ul></div></div>`}
+<h3>قواعد اللعب</h3><ul class="rules"><li>لكل جولة نموذج مستقل من 18 إلى 20 كلمة، ولا تتكرر كلمة بين النماذج.</li><li>الكلمات موزّعة على كل التخصصات، وتزداد صعوبتها كلما تقدّم الدور.</li><li>يتناوب القسمان. للقسم وقت محدد لاختيار كلمة، ثم وقت للإجابة.</li><li>انتهاء وقت الاختيار يُفقد الدور.</li><li>تُركَّب الإجابة باختيار الحروف من لوحة حروف ظاهرة، وفيها حروف زائدة للتمويه.</li><li>الإجابة الصحيحة: نقطة عن كل حرف كان مخفياً في الكلمة.</li><li>الإجابة الخاطئة أو انتهاء الوقت: يُكشف حرف من الكلمة وينتقل الدور.</li><li>لكل فريق مساعدة واحدة في الجولة: كشف حرف من الكلمة المختارة.</li><li>تنتهي الجولة باكتمال الشبكة أو بانتهاء مدتها، ويفوز صاحب النقاط الأعلى.</li><li>الهمزات تُكتب ألفاً، والتاء المربوطة هاءً.</li></ul></div></div>`}
 
 function vBracket(){const B=S.br,T=S.teams;
   const row=(m,k)=>{const t=m[k];if(t==null)return `<div class="mt tbd">${emb(null)}<span class="nm">${m.bye?'بلا منافس':'بانتظار الفائز'}</span></div>`;
@@ -704,9 +717,9 @@ function vMatch(){const M=S.cur,v=visMap(M),T=k=>S.teams[M.t[k]],sel=M.words.fin
   else if(M.over){const o=M.over,sum=`<div class="final"><span>${tn(0)}: <b>${M.sc[0].pts}</b> نقطة</span><span>${tn(1)}: <b>${M.sc[1].pts}</b> نقطة</span></div>`;
     ov=`<div class="veil"><div class="card center">${o.tie?`<h2 class="big">تعادل تام</h2><p>${o.reason}. يحسم المقدّم النتيجة بسؤال فاصل أو بالقرعة.</p>${sum}<div class="row"><button class="btn gold" data-act="commit" data-side="0">فوز ${tn(0)}</button><button class="btn gold" data-act="commit" data-side="1">فوز ${tn(1)}</button></div>`
       :`${emb(T(o.win),'xl')}<h2 class="big">فاز قسم ${tn(o.win)}</h2><p>${o.reason}.</p>${sum}<div class="row"><button class="btn gold" data-act="commit">اعتماد النتيجة</button>${M.undo.length?`<button class="btn" data-act="undo">تراجع عن آخر دور</button>`:''}</div>`}</div></div>`}
-  else if(U.q){const Q=U.q,w=M.words.find(x=>x.id===Q.id),pat=cellsOf(w).map(([r,c],i)=>`<span>${(Q.done&&Q.ok)||(r+','+c)in v?w.a[i]:''}</span>`).join('');let body;
-    if(Q.done)body=`<div class="qres"><span class="${Q.ok?'good':'fail'}">${Q.ok?`إجابة صحيحة. ${Q.gain} نقطة لقسم ${tn(M.turn)}.`:(Q.typed==null?'انتهى الوقت. ':`«${esc(Q.typed)}» إجابة خاطئة. `)+'يُكشف حرف وينتقل الدور.'}</span><button class="btn gold" data-act="cont" id="contbtn">متابعة</button></div>`;
-    else body=`<div class="ansrow"><input type="text" id="ansin" autocomplete="off" placeholder="اكتب إجابة القسم هنا" aria-label="الإجابة"><button class="btn gold" data-act="submit">تأكيد الإجابة</button></div>`;
+  else if(U.q){const Q=U.q,w=M.words.find(x=>x.id===Q.id),pat=Q.fix.map((f,i)=>f?`<span class="fix">${f}</span>`:Q.done?`<span>${Q.ok?w.a[i]:(Q.fill[i]!=null?Q.tiles[Q.fill[i]]:'')}</span>`:`<button class="slot ${Q.fill[i]!=null?'full':''}" data-act="slot" data-i="${i}" aria-label="الخانة ${i+1}">${Q.fill[i]!=null?Q.tiles[Q.fill[i]]:''}</button>`).join('');let body;
+    if(Q.done)body=`<div class="qres"><span class="${Q.ok?'good':'fail'}">${Q.ok?`إجابة صحيحة. ${Q.gain} نقطة لقسم ${tn(M.turn)}.`:(Q.typed==null?'انتهى الوقت. ':'إجابة خاطئة. ')+'يُكشف حرف وينتقل الدور.'}</span><button class="btn gold" data-act="cont" id="contbtn">متابعة</button></div>`;
+    else body=`<div class="tiles">${Q.tiles.map((ch,k)=>`<button class="tile" data-act="tile" data-i="${k}" ${Q.fill.includes(k)?'disabled':''}>${ch}</button>`).join('')}</div><div class="ansrow"><span class="cat">اضغط الحروف بالترتيب. اضغط خانة مملوءة لإفراغها.</span><button class="btn" data-act="clr">مسح</button><button class="btn gold" data-act="submit" ${qFull(Q)?'':'disabled'}>تأكيد الإجابة</button></div>`;
     ov=`<div class="veil"><div class="card"><div class="qhead">${emb(T(M.turn))}<span class="nm">${tn(M.turn)}</span>${S.cfg.rot?`<span class="cat">المجيب: ${mem(M.turn)}</span>`:''}<span class="badge l${(w.l||2)-1}">${LV[w.l||2]}</span><span class="badge">${w.num} ${w.d?'عمودي':'أفقي'}</span><span class="cat">${CATS[w.cat]||esc(w.cat)}</span><span class="cat">${w.a.length} أحرف</span><span class="qtime" id="qtime">${Math.ceil(Q.left)}</span></div><div class="qbar"><i id="qfill"></i></div><h2 class="qtext">${esc(w.clue)}</h2><div class="pat">${pat}</div>${body}</div></div>`}
   return `<div class="mbar"><h2>${RN(M.i)}</h2>${S.cfg.mTime>0?`<div class="clock" id="mclock">${fmt(M.left)}</div>`:''}<div class="mctl"><button class="btn sm" data-act="pass">تخطّي الدور</button><button class="btn sm" data-act="pause">إيقاف مؤقت</button><button class="btn sm" data-act="undo" ${M.undo.length?'':'disabled'}>تراجع عن آخر دور</button><button class="btn sm" data-act="endnow">إنهاء واحتساب النقاط</button></div></div>
 <div class="sbrow">${sb(0)}${sb(1)}</div>
@@ -752,7 +765,7 @@ document.addEventListener('click',e=>{const cl=e.target.closest('[data-r]');if(c
     case'pk':{const a=U.pk.sel[+d.k],ix=a.indexOf(d.c);if(ix>=0)a.splice(ix,1);else a.push(d.c);U.pk.msg='';render();break}
     case'pkall':U.pk.sel=[Object.keys(CATS),Object.keys(CATS)];U.pk.msg='';render();break;
     case'begin':beginMatch();break;
-    case'pause':if(M&&!M.over){U.paused=!U.paused;render();if(!U.paused&&U.q&&!U.q.done){const el=$('#ansin');if(el)el.focus()}}break;
+    case'pause':if(M&&!M.over){U.paused=!U.paused;render();}break;
     case'undo':undoMove();break;
     case'pass':passTurn();break;
     case'life':lifeline();break;
@@ -760,7 +773,10 @@ document.addEventListener('click',e=>{const cl=e.target.closest('[data-r]');if(c
     case'endnow':if(M&&!M.over&&!U.q&&sure(b,'end')){U.sel=null;decide('أنهى المقدّم المباراة');save();render()}break;
     case'pick':if(M&&!M.over&&!U.q){U.sel=d.id;snd('tap');render()}break;
     case'ask':ask();break;
-    case'submit':{const v=$('#ansin').value;if(v.trim())answer(v);break}
+    case'submit':if(U.q&&qFull(U.q))answer(qWord(U.q));break;
+    case'tile':tileClick(+d.i);break;
+    case'slot':slotClick(+d.i);break;
+    case'clr':if(U.q&&!U.q.done){U.q.fill=U.q.fill.map(()=>null);render()}break;
     case'cont':cont();break;
     case'commit':commit(d.side);break;
     case'party':confetti();snd('win');break;
@@ -796,7 +812,7 @@ document.addEventListener('change',e=>{const el=e.target,f=el.dataset.f;if(!f)re
   save();render()});
 document.addEventListener('input',e=>{if(e.target.id==='bs'){U.fs=e.target.value.trim();$('#blist').innerHTML=bankList()}});
 document.addEventListener('keydown',e=>{if(S.scr!=='match'||e.key!=='Enter')return;
-  if(e.target.id==='ansin'){e.preventDefault();if(e.target.value.trim())answer(e.target.value)}
+  if(U.q&&!U.q.done){if(qFull(U.q)){e.preventDefault();answer(qWord(U.q))}}
   else if(U.q&&U.q.done){e.preventDefault();cont()}});
 render();
 </script>
