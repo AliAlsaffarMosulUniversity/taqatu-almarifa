@@ -285,6 +285,13 @@ footer{row-gap:8px;line-height:1.8}
 .goldtxt{font-family:var(--fb);font-weight:800;font-size:1.2rem;background:linear-gradient(100deg,#9a7418 0%,#f9e79a 22%,#d9a92e 45%,#fff6c2 62%,#c89422 80%,#f3d77a 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px rgba(240,200,90,.45));animation:shine 5s linear infinite}
 @keyframes shine{to{background-position:220% center}}
 @media (prefers-reduced-motion:reduce){.goldtxt{animation:none}}
+/* شارة القسم: ميدالية لامعة بإطار ذهبي ورمز البرج */
+.emb{position:relative;overflow:hidden;border:0;color:#fff;font-weight:700;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.65);background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.8),rgba(255,255,255,0) 44%),radial-gradient(circle at 50% 62%,var(--tc,var(--gold)),color-mix(in srgb,var(--tc,var(--gold)) 50%,#000));box-shadow:0 0 0 2px #f8e08e,0 0 0 4px #a8801f,0 0 10px 3px rgba(246,214,120,.35),inset 0 -5px 9px rgba(0,0,0,.4);margin:4px}
+.emb.lg,.emb.xl{box-shadow:0 0 0 3px #f8e08e,0 0 0 7px #a8801f,0 0 22px 6px rgba(246,214,120,.4),inset 0 -10px 18px rgba(0,0,0,.4)}
+.emb::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-120%);animation:embshine 4.5s ease-in-out infinite}
+@keyframes embshine{0%,60%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.emb::after{animation:none}}
+.trow select{min-width:9.5em}
 </style>
 </head>
 <body>
@@ -679,12 +686,14 @@ const LV=['','سهل','متوسط','صعب'];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='taqatu-almarifa-v4';
-const SYMS=['★','◆','▲','●','■','✦','♜','♞','♝','♛'];
+const ZOD=[['♌','الأسد'],['♎','الميزان'],['♉','الثور'],['♐','القوس'],['♏','العقرب'],['♑','الجدي'],['♈','الحمل'],['♊','الجوزاء'],['♋','السرطان'],['♍','العذراء'],['♒','الدلو'],['♓','الحوت']].map(([g,n])=>[g+'\uFE0E',n]);
+const SYMS=ZOD.map(z=>z[0]);
 const RN=i=>i<4?'ربع النهائي':i<6?'نصف النهائي':'النهائي';
 const fresh=()=>({scr:'setup',mute:false,cfg:{qTime:30,pickTime:20,mTime:10,k:10,minLv:2,rot:true},br:null,models:{},cur:null,used:[],ws:null,logos:{col:'',uni:''},bg:'#0f2a22',
   teams:[['إدارة الأعمال','#e0694f'],['المحاسبة','#4f9bd9'],['الاقتصاد','#e2b33d'],['العلوم المالية والمصرفية','#63b77e'],['الإدارة الصناعية','#ab7fd9'],['نظم المعلومات الإدارية','#e88f44'],['إدارة التسويق','#46b9b3']].map(([name,color],i)=>({name,color,sym:SYMS[i],m:['','','']}))});
 let S=fresh();
 try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.teams)&&d.teams.length===7)S=Object.assign(S,d)}catch(e){}
+S.teams.forEach((t,i)=>{if(!SYMS.includes(t.sym))t.sym=SYMS[i]});
 const U={pl:0,fl:'',pk:null,sel:null,q:null,paused:false,edit:null,fc:'',fs:''};U.pl=S.cfg.pickTime;
 const nL=n=>n===2?'حرفان':n<=10?n+' أحرف':n+' حرفاً';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -806,7 +815,7 @@ function render(){document.documentElement.dir='rtl';document.documentElement.la
 
 function vSetup(){return `<div class="pagehead"><h2>إعداد البطولة</h2><div class="row">${S.br?`<button class="btn" data-act="go" data-scr="bracket">عرض شجرة البطولة</button><button class="btn" data-act="redraw">بطولة جديدة بقرعة جديدة</button>`:`<button class="btn gold" data-act="draw">إجراء القرعة وبدء البطولة</button>`}</div></div>
 <p class="lead">سبعة أقسام تتنافس بنظام خروج المغلوب. كل فريق من ثلاثة طلاب. عدّل الأسماء والألوان والرموز، واكتب أسماء الطلاب إن شئت، ثم أجرِ القرعة.</p>
-<div class="setup"><div>${S.teams.map((t,i)=>`<div class="trow">${emb(t)}<input type="text" id="tn${i}" data-f="name" data-i="${i}" value="${esc(t.name)}" aria-label="اسم القسم ${i+1}"><input type="color" id="tc${i}" data-f="color" data-i="${i}" value="${esc(t.color)}" aria-label="لون القسم"><select id="ts${i}" data-f="sym" data-i="${i}" aria-label="رمز القسم">${SYMS.map(s=>`<option ${s===t.sym?'selected':''}>${s}</option>`).join('')}</select><div class="mrow">${[0,1,2].map(j=>`<input type="text" id="tm${i}_${j}" data-f="m" data-i="${i}" data-j="${j}" value="${esc((t.m||[])[j]||'')}" placeholder="الطالب ${j+1}" aria-label="الطالب ${j+1}">`).join('')}</div></div>`).join('')}</div>
+<div class="setup"><div>${S.teams.map((t,i)=>`<div class="trow">${emb(t)}<input type="text" id="tn${i}" data-f="name" data-i="${i}" value="${esc(t.name)}" aria-label="اسم القسم ${i+1}"><input type="color" id="tc${i}" data-f="color" data-i="${i}" value="${esc(t.color)}" aria-label="لون القسم"><select id="ts${i}" data-f="sym" data-i="${i}" aria-label="برج القسم">${ZOD.map(([g,n])=>`<option value="${g}" ${g===t.sym?'selected':''}>${g} ${n}</option>`).join('')}</select><div class="mrow">${[0,1,2].map(j=>`<input type="text" id="tm${i}_${j}" data-f="m" data-i="${i}" data-j="${j}" value="${esc((t.m||[])[j]||'')}" placeholder="الطالب ${j+1}" aria-label="الطالب ${j+1}">`).join('')}</div></div>`).join('')}</div>
 <div class="box"><h3>ضبط المباراة</h3>
 <div class="field"><label for="cp">وقت اختيار الكلمة بالثواني (0 = بلا حد)</label><input type="number" id="cp" data-f="pickTime" min="0" max="120" value="${S.cfg.pickTime}"></div>
 <div class="field"><label for="cq">وقت الإجابة بالثواني</label><input type="number" id="cq" data-f="qTime" min="5" max="180" value="${S.cfg.qTime}"></div>
