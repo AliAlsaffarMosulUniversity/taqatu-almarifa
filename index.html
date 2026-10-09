@@ -693,7 +693,7 @@ const fresh=()=>({scr:'setup',mute:false,cfg:{qTime:30,pickTime:20,mTime:10,k:10
   teams:[['إدارة الأعمال','#e0694f'],['المحاسبة','#4f9bd9'],['الاقتصاد','#e2b33d'],['العلوم المالية والمصرفية','#63b77e'],['الإدارة الصناعية','#ab7fd9'],['نظم المعلومات الإدارية','#e88f44'],['إدارة التسويق','#46b9b3']].map(([name,color],i)=>({name,color,sym:SYMS[i],m:['','','']}))});
 let S=fresh();
 try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.teams)&&d.teams.length===7)S=Object.assign(S,d)}catch(e){}
-S.teams.forEach((t,i)=>{if(!SYMS.includes(t.sym))t.sym=SYMS[i]});
+S.teams.forEach((t,i)=>{if(!SYMS.includes(t.sym)||S.teams.findIndex(x=>x.sym===t.sym)<i)t.sym=SYMS.find(g=>!S.teams.some(x=>x.sym===g))});
 const U={pl:0,fl:'',pk:null,sel:null,q:null,paused:false,edit:null,fc:'',fs:''};U.pl=S.cfg.pickTime;
 const nL=n=>n===2?'حرفان':n<=10?n+' أحرف':n+' حرفاً';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -815,7 +815,7 @@ function render(){document.documentElement.dir='rtl';document.documentElement.la
 
 function vSetup(){return `<div class="pagehead"><h2>إعداد البطولة</h2><div class="row">${S.br?`<button class="btn" data-act="go" data-scr="bracket">عرض شجرة البطولة</button><button class="btn" data-act="redraw">بطولة جديدة بقرعة جديدة</button>`:`<button class="btn gold" data-act="draw">إجراء القرعة وبدء البطولة</button>`}</div></div>
 <p class="lead">سبعة أقسام تتنافس بنظام خروج المغلوب. كل فريق من ثلاثة طلاب. عدّل الأسماء والألوان والرموز، واكتب أسماء الطلاب إن شئت، ثم أجرِ القرعة.</p>
-<div class="setup"><div>${S.teams.map((t,i)=>`<div class="trow">${emb(t)}<input type="text" id="tn${i}" data-f="name" data-i="${i}" value="${esc(t.name)}" aria-label="اسم القسم ${i+1}"><input type="color" id="tc${i}" data-f="color" data-i="${i}" value="${esc(t.color)}" aria-label="لون القسم"><select id="ts${i}" data-f="sym" data-i="${i}" aria-label="برج القسم">${ZOD.map(([g,n])=>`<option value="${g}" ${g===t.sym?'selected':''}>${g} ${n}</option>`).join('')}</select><div class="mrow">${[0,1,2].map(j=>`<input type="text" id="tm${i}_${j}" data-f="m" data-i="${i}" data-j="${j}" value="${esc((t.m||[])[j]||'')}" placeholder="الطالب ${j+1}" aria-label="الطالب ${j+1}">`).join('')}</div></div>`).join('')}</div>
+<div class="setup"><div>${S.teams.map((t,i)=>`<div class="trow">${emb(t)}<input type="text" id="tn${i}" data-f="name" data-i="${i}" value="${esc(t.name)}" aria-label="اسم القسم ${i+1}"><input type="color" id="tc${i}" data-f="color" data-i="${i}" value="${esc(t.color)}" aria-label="لون القسم"><select id="ts${i}" data-f="sym" data-i="${i}" aria-label="برج القسم">${ZOD.filter(([g])=>g===t.sym||!S.teams.some(x=>x.sym===g)).map(([g,n])=>`<option value="${g}" ${g===t.sym?'selected':''}>${g} ${n}</option>`).join('')}</select><div class="mrow">${[0,1,2].map(j=>`<input type="text" id="tm${i}_${j}" data-f="m" data-i="${i}" data-j="${j}" value="${esc((t.m||[])[j]||'')}" placeholder="الطالب ${j+1}" aria-label="الطالب ${j+1}">`).join('')}</div></div>`).join('')}</div>
 <div class="box"><h3>ضبط المباراة</h3>
 <div class="field"><label for="cp">وقت اختيار الكلمة بالثواني (0 = بلا حد)</label><input type="number" id="cp" data-f="pickTime" min="0" max="120" value="${S.cfg.pickTime}"></div>
 <div class="field"><label for="cq">وقت الإجابة بالثواني</label><input type="number" id="cq" data-f="qTime" min="5" max="180" value="${S.cfg.qTime}"></div>
