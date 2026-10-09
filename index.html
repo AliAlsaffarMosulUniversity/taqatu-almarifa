@@ -736,11 +736,11 @@ const KEY='taqatu-almarifa-v4';
 const ZOD=[['🦁','أسد'],['🦅','صقر'],['🦌','غزال'],['🐺','ذئب'],['🐯','نمر'],['🐻','دب'],['🐎','حصان'],['🐆','فهد'],['🦉','بومة'],['🦊','ثعلب'],['🐬','دلفين'],['🐪','جمل']];
 const SYMS=ZOD.map(z=>z[0]);
 const RN=i=>i<4?'ربع النهائي':i<6?'نصف النهائي':'النهائي';
-const fresh=()=>({scr:'setup',mute:false,cfg:{qTime:30,pickTime:20,mTime:10,k:10,minLv:2,rot:true},br:null,models:{},cur:null,used:[],ws:null,logos:{col:'',uni:''},bg:'#ffffff',bgv:2,
+const fresh=()=>({scr:'setup',mute:false,cfg:{qTime:30,pickTime:20,mTime:10,k:10,minLv:2,rot:true},br:null,models:{},cur:null,used:[],ws:null,logos:{col:'',uni:''},bg:'#ffffff',
   teams:[['إدارة الأعمال','#e0694f'],['المحاسبة','#4f9bd9'],['الاقتصاد','#e2b33d'],['العلوم المالية والمصرفية','#63b77e'],['الإدارة الصناعية','#ab7fd9'],['نظم المعلومات الإدارية','#e88f44'],['إدارة التسويق','#46b9b3']].map(([name,color],i)=>({name,color,sym:SYMS[i],m:['','','']}))});
 let S=fresh();
 try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.teams)&&d.teams.length===7)S=Object.assign(S,d)}catch(e){}
-if(S.bgv!==2){S.bgv=2;if(S.bg==='#0f2a22')S.bg='#ffffff'}
+if(S.bgw!==1){S.bgw=1;if(S.bg==='#0f2a22')S.bg='#ffffff'}
 S.teams.forEach((t,i)=>{if(!SYMS.includes(t.sym)||S.teams.findIndex(x=>x.sym===t.sym)<i)t.sym=SYMS.find(g=>!S.teams.some(x=>x.sym===g))});
 const U={pl:0,fl:'',pk:null,sel:null,q:null,paused:false,edit:null,fc:'',fs:''};U.pl=S.cfg.pickTime;
 const nL=n=>n===2?'حرفان':n<=10?n+' أحرف':n+' حرفاً';
