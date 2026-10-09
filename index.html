@@ -339,6 +339,24 @@ footer{row-gap:8px;line-height:1.8}
 #top{padding-inline:10px;gap:8px 22px}
 @media (max-width:900px){.logo{width:56px;height:56px}}
 @media (prefers-reduced-motion:reduce){.logo img,.logo::after{animation:none}}
+/* تعميق لون الخط على الخلفية الفاتحة */
+[data-light="1"] body{font-weight:600}
+[data-light="1"] .lead,[data-light="1"] .cat,[data-light="1"] .empty,[data-light="1"] .rules,[data-light="1"] .field label,[data-light="1"] .sb .st,[data-light="1"] .brand span,[data-light="1"] .mid small,[data-light="1"] .mc small{color:#1f2d27;font-weight:600}
+[data-light="1"] .clue{font-weight:700;color:#04100b}
+[data-light="1"] .clue em,[data-light="1"] .clue .dir,[data-light="1"] .chip small{color:#24332c;font-weight:700}
+[data-light="1"] .ccol:not(.on) .clue:not(.done){opacity:.78}
+[data-light="1"] .clue.done{opacity:.8}
+[data-light="1"] .brand h1,[data-light="1"] .pagehead h2{color:#062a1e;font-weight:800}
+[data-light="1"] .box h3,[data-light="1"] .round>h3,[data-light="1"] .ccol h3,[data-light="1"] .clue b,[data-light="1"] .status b{color:#064a33;font-weight:800}
+[data-light="1"] .clock,[data-light="1"] .pts,[data-light="1"] .ptime,[data-light="1"] .qtime,[data-light="1"] .mt .win{color:#8a5a00}
+[data-light="1"] .status,[data-light="1"] .qtext,[data-light="1"] .mt,[data-light="1"] .sb h3,[data-light="1"] .chip{color:#04100b;font-weight:700}
+[data-light="1"] .btn:not(.gold){color:#04100b;font-weight:700;border-color:#7d8f86}
+[data-light="1"] input,[data-light="1"] select,[data-light="1"] textarea{color:#04100b;font-weight:600;border-color:#8a9b92}
+[data-light="1"] ::placeholder{color:#55655d;opacity:1}
+[data-light="1"] .neonw{font-weight:800}
+[data-light="1"] .cell{color:#000;font-weight:800}
+[data-light="1"] .clue{border-bottom-color:#b9c6bf}
+[data-light="1"] .box,[data-light="1"] .mc,[data-light="1"] .sb{border-color:#9fb0a7}
 </style>
 </head>
 <body>
@@ -752,7 +770,7 @@ const BGS=[['#ffffff','أبيض'],['#0f2a22','أخضر'],['#0f1f3a','كحلي'],
 function applyBg(){const c=/^#[0-9a-f]{6}$/i.test(S.bg)?S.bg:'#ffffff',n=parseInt(c.slice(1),16),lum=(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255))/255,light=lum>.55,k=light?'#123a2e':'white',st=document.documentElement.style;
   const m=light?[96,90,80]:[93,84,72];
   const set={'--felt':c,'--felt2':`color-mix(in srgb,${c} ${m[0]}%,${k})`,'--felt3':`color-mix(in srgb,${c} ${m[1]}%,${k})`,'--line':`color-mix(in srgb,${c} ${m[2]}%,${k})`,
-    '--ivory':light?'#14261f':'#f4ecd6','--mute':light?'#56685f':`color-mix(in srgb,${c} 30%,white)`,'--gold2':light?'#9a6800':'#f3cf7a','--gold':light?'#e0ae3e':'#dcaa45','--neon':light?'#0070d6':'#4fd8ff','--neonw':light?'#14261f':'#ffffff','--neong':light?'transparent':'#cfe6ff','color-scheme':light?'light':'dark'};
+    '--ivory':light?'#04100b':'#f4ecd6','--mute':light?'#2b3a33':`color-mix(in srgb,${c} 30%,white)`,'--gold2':light?'#7a5000':'#f3cf7a','--gold':light?'#e0ae3e':'#dcaa45','--neon':light?'#0070d6':'#4fd8ff','--neonw':light?'#04100b':'#ffffff','--neong':light?'transparent':'#cfe6ff','color-scheme':light?'light':'dark'};
   for(const k2 in set)st.setProperty(k2,set[k2]);document.documentElement.dataset.light=light?'1':'0'}
 
 /* ===== الصوت ===== */
